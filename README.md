@@ -16,7 +16,7 @@ pornográfico (NSFW).
 | **Anti-NSFW** | Bloqueia pornografia em **texto, links, figurinhas, imagens e vídeos**. |
 | **Sistema de avisos** | Acumula avisos e pune automaticamente ao atingir o limite. |
 | **/marcar** | Marca todo mundo (@everyone / @here) com uma mensagem. |
-| **/like** | Publica uma mensagem com votação 👍 / 👎. |
+| **/like** | Envia likes diários para um jogador do Free Fire (Frifas Likes API). |
 | **/config** | Liga/desliga e ajusta cada sistema, direto pelo Discord. |
 | **Logs** | Toda punição é registrada em um canal de logs. |
 
@@ -84,6 +84,21 @@ Sem essas chaves, o bot continua funcionando apenas com o filtro heurístico
 
 ---
 
+## 👍 Comando /like — Likes no Free Fire
+
+O `/like id:<UID>` envia likes para um jogador do Free Fire usando a
+**Frifas Likes API** ([repositório de referência](https://github.com/HubsGGx/Daily-Likes-FreeFire)).
+
+Configure a chave no `.env`:
+```
+FRIFAS_API_KEY=sua_chave
+```
+O bot responde com o nome da conta, região e a contagem de likes
+(antes / enviados / depois). Há um cooldown de 60s por UID para não
+sobrecarregar a API, e os likes diários são limitados pelo próprio serviço.
+
+---
+
 ## ⚙️ Ajustes rápidos (no Discord)
 
 ```
@@ -108,6 +123,7 @@ Ajustes mais finos (limites de spam, whitelist de domínios, etc.) ficam em
 │   ├── events/                # ready, interactionCreate, messageCreate, guildCreate
 │   ├── handlers/              # carregadores de comandos e eventos
 │   ├── moderation/            # antiLink, antiSpam, antiNsfw, modActions, visionApi
+│   ├── services/              # frifas (API de likes do Free Fire)
 │   └── utils/                 # logger, store, embeds
 ```
 

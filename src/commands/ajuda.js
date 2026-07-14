@@ -34,7 +34,7 @@ module.exports = {
           name: '📢 Utilidades',
           value: [
             '`/marcar` — marca todo mundo (@everyone)',
-            '`/like` — publica algo com votação 👍/👎',
+            '`/like` — envia likes para um jogador do Free Fire',
             '`/ping` — latência do bot',
           ].join('\n'),
         },
