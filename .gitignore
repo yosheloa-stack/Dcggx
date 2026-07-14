@@ -1,0 +1,16 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente (NUNCA suba seu token!)
+.env
+
+# Dados persistidos (config por servidor, avisos)
+data/*.json
+
+# Logs
+logs/
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
