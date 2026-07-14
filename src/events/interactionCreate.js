@@ -3,6 +3,7 @@
 const { Events, MessageFlags, PermissionFlagsBits } = require('discord.js');
 const embeds = require('../utils/embeds');
 const logger = require('../utils/logger');
+const store = require('../utils/store');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -11,6 +12,18 @@ module.exports = {
 
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
+
+    // Canal exclusivo de likes: só o comando /like é permitido lá (admin passa).
+    if (interaction.guild) {
+      const { likesChannelId } = store.getSettings(interaction.guild.id);
+      const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
+      if (likesChannelId && interaction.channelId === likesChannelId && interaction.commandName !== 'like' && !isAdmin) {
+        return interaction.reply({
+          embeds: [embeds.warn('Canal exclusivo', 'Este canal é só para o comando `/like`.')],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+    }
 
     // Comandos "ownerOnly" exigem ser dono do bot, dono do servidor ou admin.
     if (command.ownerOnly) {

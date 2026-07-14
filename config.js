@@ -24,6 +24,8 @@ module.exports = {
     logChannelId: null,
     // Cargo aplicado a quem é silenciado (definido no /setup)
     mutedRoleId: null,
+    // Canal exclusivo do comando /like — ninguém conversa, só usa /like (definido no /setup)
+    likesChannelId: null,
 
     // ---------------- ANTI-LINK ----------------
     antiLink: {

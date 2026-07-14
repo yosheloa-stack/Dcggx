@@ -39,6 +39,16 @@ module.exports = {
           ].join('\n'),
         },
         {
+          name: '🎵 Música',
+          value: [
+            '`/tocar` — toca uma música na call (nome ou link do YouTube)',
+            '`/pular` — pula a música atual',
+            '`/pausar` / `/retomar` — pausa e retoma',
+            '`/fila` — mostra a fila',
+            '`/parar` — para tudo e sai da call',
+          ].join('\n'),
+        },
+        {
           name: '🔒 Proteções automáticas',
           value: [
             '**Anti-Link** — remove links não permitidos',

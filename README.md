@@ -17,6 +17,8 @@ pornográfico (NSFW).
 | **Sistema de avisos** | Acumula avisos e pune automaticamente ao atingir o limite. |
 | **/marcar** | Marca todo mundo (@everyone / @here) com uma mensagem. |
 | **/like** | Envia likes diários para um jogador do Free Fire (Frifas Likes API). |
+| **Canal só de likes** | O `/setup` cria um canal onde ninguém conversa — só o `/like` funciona. |
+| **Música** | Toca músicas do YouTube na call: `/tocar`, `/pular`, `/pausar`, `/retomar`, `/fila`, `/parar`. |
 | **/config** | Liga/desliga e ajusta cada sistema, direto pelo Discord. |
 | **Logs** | Toda punição é registrada em um canal de logs. |
 
@@ -99,6 +101,27 @@ sobrecarregar a API, e os likes diários são limitados pelo próprio serviço.
 
 ---
 
+## 🎵 Música na call
+
+O GGX toca músicas do YouTube no canal de voz:
+
+```
+/tocar musica:<nome ou link>   → entra na sua call e toca (ou coloca na fila)
+/pular                         → pula a atual
+/pausar   /retomar             → pausa e retoma
+/fila                          → mostra a fila
+/parar                         → para tudo e sai da call
+```
+
+O áudio do YouTube é entregue já em **opus** pela biblioteca `play-dl`, então
+**não é obrigatório ter ffmpeg**. Para tocar outras fontes (arquivos, links
+diretos), instale o ffmpeg no sistema (`apt install ffmpeg`).
+
+> Requer o intent **Guild Voice States** (já ativado no código) e as permissões
+> **Conectar** e **Falar** no canal de voz.
+
+---
+
 ## ⚙️ Ajustes rápidos (no Discord)
 
 ```
@@ -119,10 +142,12 @@ Ajustes mais finos (limites de spam, whitelist de domínios, etc.) ficam em
 ├── src/
 │   ├── index.js               # ponto de entrada
 │   ├── deploy-commands.js     # registra os slash commands
-│   ├── commands/              # /setup, /config, /marcar, /like, /avisos, /ping, /ajuda
+│   ├── commands/              # setup, config, marcar, like, avisos, ping, ajuda,
+│   │                          #   tocar, pular, pausar, retomar, fila, parar
 │   ├── events/                # ready, interactionCreate, messageCreate, guildCreate
 │   ├── handlers/              # carregadores de comandos e eventos
 │   ├── moderation/            # antiLink, antiSpam, antiNsfw, modActions, visionApi
+│   ├── music/                 # GuildPlayer, manager (música na call)
 │   ├── services/              # frifas (API de likes do Free Fire)
 │   └── utils/                 # logger, store, embeds
 ```

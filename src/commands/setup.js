@@ -41,8 +41,15 @@ const STRUCTURE = [
     category: '💬 COMUNIDADE',
     channels: [
       { name: 'chat-geral', type: ChannelType.GuildText },
+      { name: 'conversa', type: ChannelType.GuildText },
       { name: 'mídia', type: ChannelType.GuildText },
-      { name: 'comandos', type: ChannelType.GuildText },
+    ],
+  },
+  {
+    category: '👍 LIKES',
+    channels: [
+      // Canal exclusivo do comando /like: ninguém digita, só usa o comando
+      { name: '👍-enviar-like', type: ChannelType.GuildText, likesOnly: true },
     ],
   },
   {
@@ -54,7 +61,8 @@ const STRUCTURE = [
   {
     category: '🔊 VOZ',
     channels: [
-      { name: 'Geral', type: ChannelType.GuildVoice },
+      { name: 'Call Geral', type: ChannelType.GuildVoice },
+      { name: 'Música 🎵', type: ChannelType.GuildVoice },
       { name: 'Jogos', type: ChannelType.GuildVoice },
     ],
   },
@@ -104,6 +112,7 @@ module.exports = {
 
     const staffRoles = [roleMap['GGX Admin'].id, roleMap['Moderador'].id];
     let logChannelId = null;
+    let likesChannelId = null;
 
     // 2) Categorias e canais ----------------------------------------------
     for (const block of STRUCTURE) {
@@ -134,6 +143,7 @@ module.exports = {
         );
         if (exists) {
           if (ch.isLog) logChannelId = exists.id;
+          if (ch.likesOnly) likesChannelId = exists.id;
           continue;
         }
 
@@ -143,6 +153,19 @@ module.exports = {
             { id: everyone.id, deny: [PermissionFlagsBits.SendMessages] },
             ...staffRoles.map((id) => ({ id, allow: [PermissionFlagsBits.SendMessages] })),
           );
+        }
+        if (ch.likesOnly) {
+          // Ninguém digita/reage: só dá pra usar o comando /like
+          overwrites.push({
+            id: everyone.id,
+            deny: [
+              PermissionFlagsBits.SendMessages,
+              PermissionFlagsBits.AddReactions,
+              PermissionFlagsBits.CreatePublicThreads,
+              PermissionFlagsBits.CreatePrivateThreads,
+            ],
+            allow: [PermissionFlagsBits.UseApplicationCommands, PermissionFlagsBits.ViewChannel],
+          });
         }
 
         const channel = await guild.channels.create({
@@ -155,12 +178,14 @@ module.exports = {
         });
         created.channels.push(ch.name);
         if (ch.isLog) logChannelId = channel.id;
+        if (ch.likesOnly) likesChannelId = channel.id;
       }
     }
 
     // 3) Salva referências nas configurações -------------------------------
     store.updateSettings(guild.id, {
       logChannelId,
+      likesChannelId,
       mutedRoleId: roleMap['Silenciado'].id,
     });
 
@@ -185,6 +210,7 @@ module.exports = {
         `**Categorias criadas:** ${created.categories.length}`,
         `**Canais criados:** ${created.channels.length}`,
         logChannelId ? `**Canal de logs:** <#${logChannelId}>` : '',
+        likesChannelId ? `**Canal de likes:** <#${likesChannelId}> (só o comando /like)` : '',
         '',
         'Use `/config` para ajustar anti-link, anti-spam, anti-NSFW e avisos.',
       ].filter(Boolean).join('\n'),
