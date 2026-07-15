@@ -26,6 +26,9 @@ pornográfico (NSFW).
 
 ## 🚀 Instalação
 
+> 📘 **Passo a passo completo e detalhado** (como pegar token, CLIENT_ID,
+> OWNER_ID, ligar os intents e convidar o bot): veja **[GUIA-DE-INSTALACAO.md](GUIA-DE-INSTALACAO.md)**.
+
 ### 1. Pré-requisitos
 - [Node.js](https://nodejs.org) **18 ou superior**
 - Uma aplicação/bot no [Discord Developer Portal](https://discord.com/developers/applications)
