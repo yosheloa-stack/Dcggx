@@ -40,6 +40,7 @@ class GuildPlayer {
     this.loop = false;
     this.autoplay = false;
     this.volume = 1.0; // 1.0 = 100%
+    this.consecutiveFailures = 0;
 
     this.player = createAudioPlayer({
       behaviors: { noSubscriber: NoSubscriberBehavior.Pause },
@@ -141,14 +142,29 @@ class GuildPlayer {
       this.currentResource = resource;
       this.player.play(resource);
       this.current = track;
+      this.consecutiveFailures = 0; // tocou: zera o contador de falhas
       await this.showPanel();
     } catch (err) {
       logger.error('Falha ao tocar faixa:', err.message);
-      const bloqueio = /confirm you.?re not a bot|sign in|429|consent/i.test(err.message || '');
-      const msg = bloqueio
-        ? `O YouTube bloqueou a busca (**${track.title}**). Configure o \`YOUTUBE_COOKIE\` no bot para resolver.`
-        : `Não consegui tocar **${track.title}**. Pulando...`;
-      this.textChannel?.send({ embeds: [embeds.danger('Erro na música', msg)] }).catch(() => null);
+      this.consecutiveFailures += 1;
+
+      // Só avisa nas primeiras falhas (evita 50 mensagens de erro seguidas)
+      if (this.consecutiveFailures <= 2) {
+        this.textChannel?.send({
+          embeds: [embeds.danger('Erro na música', `Não consegui tocar **${track.title}**. Pulando...`)],
+        }).catch(() => null);
+      }
+
+      // Muitas falhas seguidas = API de áudio instável: para para não zerar a fila
+      if (this.consecutiveFailures >= 8) {
+        this.textChannel?.send({
+          embeds: [embeds.danger('Música pausada', 'Várias músicas seguidas falharam (a API de áudio parece instável). Tente de novo mais tarde.')],
+        }).catch(() => null);
+        this.stop();
+        return;
+      }
+
+      await new Promise((r) => setTimeout(r, 1200)); // não passa a fila voando
       this.playNext();
     }
   }

@@ -107,11 +107,10 @@ async function getAudioUrl(ytUrl) {
   return audioUrl;
 }
 
-/**
- * Devolve um stream tocável { stream, type } (método comprovado).
- * O bot baixa o áudio e entrega o stream ao @discordjs/voice.
- */
-async function getStream(ytUrl) {
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Uma tentativa de obter o stream de áudio. */
+async function getStreamOnce(ytUrl) {
   if (!isConfigured()) throw new Error('YTAUDIO_API_KEY não configurada.');
 
   const res = await fetch(buildUrl(ytUrl), fetchOpts());
@@ -133,6 +132,26 @@ async function getStream(ytUrl) {
   if (!audioRes.ok || !audioRes.body) throw new Error(`Falha ao baixar o áudio (HTTP ${audioRes.status}).`);
   logger.info(`Áudio via API: ${ytUrl}`);
   return { stream: Readable.fromWeb(audioRes.body), type: StreamType.Arbitrary };
+}
+
+/**
+ * Devolve um stream tocável, com RETRY: se a API falhar (sobrecarga,
+ * rate-limit, erro pontual), tenta de novo com espera antes de desistir.
+ */
+async function getStream(ytUrl, attempts = 3) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await getStreamOnce(ytUrl);
+    } catch (err) {
+      lastErr = err;
+      if (i < attempts - 1) {
+        logger.warn(`API de áudio falhou (tentativa ${i + 1}/${attempts}): ${err.message}`);
+        await sleep(1000 * (i + 1)); // 1s, 2s...
+      }
+    }
+  }
+  throw lastErr;
 }
 
 module.exports = { isConfigured, getStream, getAudioUrl, deepFindUrl };
