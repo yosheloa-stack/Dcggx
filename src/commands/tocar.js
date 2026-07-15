@@ -3,6 +3,10 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const embeds = require('../utils/embeds');
 const music = require('../music/manager');
+const store = require('../utils/store');
+
+const DEFAULT_MUSIC = { onlyInMusicChannels: true, channelKeywords: ['music', 'musica'] };
+const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 /** /tocar — Toca uma música no canal de voz (YouTube por nome ou link). */
 module.exports = {
@@ -27,6 +31,31 @@ module.exports = {
     if (!perms?.has('Connect') || !perms?.has('Speak')) {
       return interaction.reply({
         embeds: [embeds.danger('Sem permissão', 'Não tenho permissão para conectar/falar nesse canal de voz.')],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Regra 1: só toca em canal de voz "de música" (ex.: 🎵 Music 1)
+    const musicCfg = store.getSettings(interaction.guild.id).music || DEFAULT_MUSIC;
+    if (musicCfg.onlyInMusicChannels) {
+      const nome = norm(voiceChannel.name);
+      const ehMusica = (musicCfg.channelKeywords || DEFAULT_MUSIC.channelKeywords).some((k) => nome.includes(k));
+      if (!ehMusica) {
+        return interaction.reply({
+          embeds: [embeds.warn('Call errada', 'Entre em uma call de música (🎵 **Music**) para pedir músicas.')],
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+    }
+
+    // Regra 2: uma call por vez — se o bot já está tocando em OUTRA call, recusa
+    const existing = music.getPlayer(interaction.guild);
+    if (existing && existing.voiceChannelId && existing.voiceChannelId !== voiceChannel.id) {
+      return interaction.reply({
+        embeds: [embeds.warn(
+          'Já estou ocupado',
+          `Já estou tocando na call <#${existing.voiceChannelId}>. Espere terminar ou entre nessa call — só consigo tocar em uma de cada vez.`,
+        )],
         flags: MessageFlags.Ephemeral,
       });
     }

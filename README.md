@@ -116,6 +116,12 @@ O GGX toca músicas do YouTube no canal de voz:
 /parar                         → para tudo e sai da call
 ```
 
+**Regras da música:**
+- Só toca se você estiver em uma **call de música** (canal de voz cujo nome
+  contém `music`/`musica`, ex.: 🎵 Music 1). Ajustável em `config.js` → `music`.
+- **Uma call por vez:** se o bot já está tocando em uma call, pedidos de
+  **outra** call são recusados até ele ficar livre.
+
 O áudio do YouTube é entregue já em **opus** pela biblioteca `play-dl`, então
 **não é obrigatório ter ffmpeg**. Para tocar outras fontes (arquivos, links
 diretos), instale o ffmpeg no sistema (`apt install ffmpeg`).

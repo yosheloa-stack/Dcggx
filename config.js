@@ -74,6 +74,16 @@ module.exports = {
       deleteMessage: true,
     },
 
+    // ---------------- MÚSICA ----------------
+    music: {
+      // Só permite tocar se a pessoa estiver num canal de voz "de música"
+      onlyInMusicChannels: true,
+      // Palavras que identificam um canal de música (pelo nome, sem acento)
+      channelKeywords: ['music', 'musica'],
+      // Uma call por vez: se o bot já estiver tocando em outra call, recusa
+      // pedidos vindos de calls diferentes (sempre ligado por design).
+    },
+
     // ---------------- AVISOS ----------------
     warnings: {
       enabled: true,

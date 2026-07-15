@@ -24,6 +24,7 @@ class GuildPlayer {
     this.queue = []; // [{ title, url, durationRaw, thumbnail, requestedBy }]
     this.current = null;
     this.connection = null;
+    this.voiceChannelId = null; // call em que o bot está tocando
     this.player = createAudioPlayer({
       behaviors: { noSubscriber: NoSubscriberBehavior.Pause },
     });
@@ -45,6 +46,7 @@ class GuildPlayer {
       adapterCreator: this.guild.voiceAdapterCreator,
       selfDeaf: true,
     });
+    this.voiceChannelId = voiceChannel.id;
     this.connection.subscribe(this.player);
 
     try {
@@ -153,6 +155,7 @@ class GuildPlayer {
     this.clearLeave();
     this.current = null;
     this.queue = [];
+    this.voiceChannelId = null;
     try {
       this.connection?.destroy();
     } catch {
