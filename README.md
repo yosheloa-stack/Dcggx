@@ -104,6 +104,33 @@ sobrecarregar a API, e os likes diários são limitados pelo próprio serviço.
 
 ---
 
+## ☁️ Hospedar na Square Cloud
+
+O projeto já vem com o arquivo **`squarecloud.app`** configurado:
+
+```
+DISPLAY_NAME=GGX
+MAIN=src/index.js
+MEMORY=512
+VERSION=recommended
+AUTORESTART=true
+```
+
+Passos:
+1. Gere o `.zip` do projeto **sem** a pasta `node_modules` (a Square instala as deps).
+2. Suba na Square Cloud (site ou app).
+3. **Variáveis de ambiente (token e chaves):** por segurança, cadastre em
+   **Configurações → Variáveis de Ambiente** no painel da Square
+   (`DISCORD_TOKEN`, `CLIENT_ID`, `OWNER_ID`, `FRIFAS_API_KEY`).
+   *Alternativa:* incluir o arquivo `.env` dentro do `.zip` do upload.
+4. Pronto — ao ligar, o bot **registra os slash commands sozinho** (não
+   precisa rodar `npm run deploy` na Square).
+
+> O `.env` é ignorado pelo git de propósito, então ele **não** vai junto se
+> você hospedar via GitHub — nesse caso use as Variáveis de Ambiente do painel.
+
+---
+
 ## 🎵 Música na call
 
 O GGX toca músicas do YouTube no canal de voz:
