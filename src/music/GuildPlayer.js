@@ -304,9 +304,16 @@ class GuildPlayer {
 
   /** Novo track: apaga o painel antigo e posta um novo (sempre no fim do chat). */
   async showPanel() {
-    if (!this.textChannel) return;
+    if (!this.textChannel || !this.current) return;
     await this.removePanel();
-    this.panelMessage = await this.textChannel.send(this.renderPanel()).catch(() => null);
+    const trackAtSend = this.current;
+    const msg = await this.textChannel.send(this.renderPanel()).catch(() => null);
+    // Corrida: se a música mudou/parou enquanto enviava, este painel é órfão
+    if (this.current !== trackAtSend) {
+      msg?.delete().catch(() => null);
+      return;
+    }
+    this.panelMessage = msg;
   }
 
   /** Atualiza o painel existente (troca de estado: volume, loop, pause...). */

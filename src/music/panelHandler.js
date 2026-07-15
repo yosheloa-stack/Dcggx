@@ -12,12 +12,14 @@ async function handleButton(interaction) {
   const action = interaction.customId.split(':')[1];
   const player = music.getPlayer(interaction.guild);
 
-  // Nada tocando
+  // Painel velho / nada tocando: converte o painel em "encerrada" e tira os botões
   if (!player || !player.current) {
-    return interaction.reply({
-      embeds: [embeds.warn('Nada tocando', 'Não há música tocando no momento.')],
-      flags: MessageFlags.Ephemeral,
-    });
+    const encerrada = { embeds: [embeds.warn('Música encerrada', 'Essa sessão já acabou. Use `/tocar` para começar de novo.')], components: [] };
+    try {
+      return await interaction.update(encerrada);
+    } catch {
+      return interaction.reply({ ...encerrada, flags: MessageFlags.Ephemeral }).catch(() => null);
+    }
   }
 
   // Só quem está na mesma call do bot pode controlar
