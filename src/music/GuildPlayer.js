@@ -153,26 +153,27 @@ class GuildPlayer {
     }
   }
 
-  /** Busca uma música relacionada para o AutoPlay. */
+  /**
+   * Busca uma música parecida para o AutoPlay.
+   * Usa a BUSCA (play.search) — que funciona na nuvem — em vez das
+   * infos do vídeo (que o YouTube bloqueia).
+   */
   async getRelated(track) {
     try {
-      const info = await play.video_basic_info(track.url);
-      const related = info?.related_videos || [];
-      for (const url of related) {
-        if (!this.history.some((h) => h.url === url) && url !== track.url) {
-          const vi = await play.video_basic_info(url).catch(() => null);
-          const v = vi?.video_details;
-          if (v?.url) {
-            return {
-              title: v.title || 'Sem título',
-              url: v.url,
-              durationRaw: v.durationRaw || null,
-              thumbnail: v.thumbnails?.[0]?.url || null,
-              author: v.channel?.name || '—',
-              requestedBy: '🔁 AutoPlay',
-            };
-          }
-        }
+      const base = track.author && track.author !== '—' ? track.author : track.title;
+      const results = await play.search(base, { limit: 15, source: { youtube: 'video' } }).catch(() => []);
+      const played = new Set([track.url, ...this.history.map((h) => h.url)]);
+      const candidatos = results.filter((v) => v?.url && !played.has(v.url));
+      const escolhido = candidatos[Math.floor(Math.random() * candidatos.length)];
+      if (escolhido?.url) {
+        return {
+          title: escolhido.title || 'Sem título',
+          url: escolhido.url,
+          durationRaw: escolhido.durationRaw || null,
+          thumbnail: escolhido.thumbnails?.[0]?.url || null,
+          author: escolhido.channel?.name || escolhido.channel?.title || '—',
+          requestedBy: '📻 AutoPlay',
+        };
       }
     } catch (err) {
       logger.error('AutoPlay falhou:', err.message);
