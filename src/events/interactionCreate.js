@@ -19,11 +19,10 @@ module.exports = {
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
 
-    // Canal exclusivo de likes: só o comando /like é permitido lá (admin passa).
+    // Canal exclusivo de likes: SÓ o comando /like é permitido lá (vale para todos, até o dono).
     if (interaction.guild) {
       const { likesChannelId } = store.getSettings(interaction.guild.id);
-      const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
-      if (likesChannelId && interaction.channelId === likesChannelId && interaction.commandName !== 'like' && !isAdmin) {
+      if (likesChannelId && interaction.channelId === likesChannelId && interaction.commandName !== 'like') {
         return interaction.reply({
           embeds: [embeds.warn('Canal exclusivo', 'Este canal é só para o comando `/like`.')],
           flags: MessageFlags.Ephemeral,
