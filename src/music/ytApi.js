@@ -1,5 +1,7 @@
 'use strict';
 
+const { Readable } = require('node:stream');
+const { StreamType } = require('@discordjs/voice');
 const logger = require('../utils/logger');
 
 /**
@@ -89,4 +91,32 @@ async function getAudioUrl(ytUrl) {
   return audioUrl;
 }
 
-module.exports = { isConfigured, getAudioUrl, deepFindUrl };
+/**
+ * Devolve um stream tocável { stream, type } (método comprovado).
+ * O bot baixa o áudio e entrega o stream ao @discordjs/voice.
+ */
+async function getStream(ytUrl) {
+  if (!isConfigured()) throw new Error('YTAUDIO_API_KEY não configurada.');
+
+  const res = await fetch(buildUrl(ytUrl), { headers: { 'User-Agent': 'GGX-Bot' } });
+  if (!res.ok || !res.body) throw new Error(`API de áudio respondeu HTTP ${res.status}.`);
+
+  const ct = (res.headers.get('content-type') || '').toLowerCase();
+
+  // Caso 1: a API já devolve o áudio direto
+  if (ct.startsWith('audio') || ct.includes('octet-stream') || ct.includes('mpeg') || ct.includes('video')) {
+    return { stream: Readable.fromWeb(res.body), type: StreamType.Arbitrary };
+  }
+
+  // Caso 2: a API devolve um JSON com o link do áudio
+  const data = await res.json().catch(() => null);
+  const audioUrl = deepFindUrl(data);
+  if (!audioUrl) throw new Error(`API não retornou link de áudio. Resposta: ${JSON.stringify(data).slice(0, 200)}`);
+
+  const audioRes = await fetch(audioUrl, { headers: { 'User-Agent': 'GGX-Bot' } });
+  if (!audioRes.ok || !audioRes.body) throw new Error(`Falha ao baixar o áudio (HTTP ${audioRes.status}).`);
+  logger.info(`Áudio via API: ${ytUrl}`);
+  return { stream: Readable.fromWeb(audioRes.body), type: StreamType.Arbitrary };
+}
+
+module.exports = { isConfigured, getStream, getAudioUrl, deepFindUrl };

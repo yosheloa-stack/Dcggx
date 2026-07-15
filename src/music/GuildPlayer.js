@@ -8,14 +8,12 @@ const {
   VoiceConnectionStatus,
   entersState,
   NoSubscriberBehavior,
-  StreamType,
 } = require('@discordjs/voice');
 const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
 } = require('discord.js');
-const prism = require('prism-media');
 const play = require('play-dl');
 const ytApi = require('./ytApi');
 const embeds = require('../utils/embeds');
@@ -122,33 +120,23 @@ class GuildPlayer {
     this.clearLeave();
 
     try {
-      let resource;
-
+      // Método comprovado: baixa o áudio pela API e entrega o stream.
+      let source;
       if (ytApi.isConfigured()) {
-        // O ffmpeg baixa o áudio direto da URL, com reconexão automática
-        // (evita o erro "terminated" quando a conexão HTTP oscila).
-        const audioUrl = await ytApi.getAudioUrl(track.url);
-        const transcoder = new prism.FFmpeg({
-          args: [
-            '-reconnect', '1',
-            '-reconnect_streamed', '1',
-            '-reconnect_delay_max', '5',
-            '-i', audioUrl,
-            '-analyzeduration', '0',
-            '-loglevel', '0',
-            '-ar', '48000',
-            '-ac', '2',
-            '-f', 's16le',
-          ],
-        });
-        transcoder.on('error', () => { /* o player.on('error') cuida */ });
-        resource = createAudioResource(transcoder, { inputType: StreamType.Raw, inlineVolume: true });
+        try {
+          source = await ytApi.getStream(track.url);
+        } catch (apiErr) {
+          logger.warn(`API de áudio falhou (${apiErr.message}); tentando play-dl...`);
+          source = await play.stream(track.url);
+        }
       } else {
-        // Reserva: play-dl (entrega opus)
-        const source = await play.stream(track.url);
-        resource = createAudioResource(source.stream, { inputType: source.type, inlineVolume: true });
+        source = await play.stream(track.url);
       }
 
+      const resource = createAudioResource(source.stream, {
+        inputType: source.type,
+        inlineVolume: true,
+      });
       resource.volume?.setVolume(this.volume);
       this.currentResource = resource;
       this.player.play(resource);
