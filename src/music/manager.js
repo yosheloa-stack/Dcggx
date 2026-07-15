@@ -86,15 +86,20 @@ async function resolve(query, requestedBy) {
     return searchVideo(nome, requestedBy);
   }
 
-  const type = await play.validate(query).catch(() => false);
+  // ----- LINK (youtube.com, music.youtube.com, youtu.be) -----
+  // Extrai os IDs e monta URLs limpas que o play-dl/youtube-sr entendem.
+  if (/https?:\/\//i.test(query)) {
+    const listId = (query.match(/[?&]list=([\w-]+)/) || [])[1];
+    const videoId = (query.match(/[?&]v=([\w-]+)/) || query.match(/youtu\.be\/([\w-]+)/) || [])[1];
+    const ehPlaylist = /\/playlist/i.test(query) || (listId && !videoId);
 
-  // ----- Playlist por LINK -----
-  if (type === 'yt_playlist' || /[?&]list=/.test(query)) {
-    return loadPlaylist(query, requestedBy);
-  }
-
-  // ----- Vídeo por LINK -----
-  if (type === 'yt_video' || /youtu\.?be/.test(query)) {
+    if (ehPlaylist && listId) {
+      return loadPlaylist(`https://www.youtube.com/playlist?list=${listId}`, requestedBy);
+    }
+    if (videoId) {
+      return videoByUrl(`https://www.youtube.com/watch?v=${videoId}`, requestedBy);
+    }
+    // Link genérico: tenta do jeito que veio
     return videoByUrl(query, requestedBy);
   }
 
