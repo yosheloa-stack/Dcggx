@@ -4,6 +4,22 @@ const { Readable } = require('node:stream');
 const { StreamType } = require('@discordjs/voice');
 const logger = require('../utils/logger');
 
+// Sem timeout de corpo/cabeçalho: o áudio vai baixando conforme toca, então
+// uma música longa poderia estourar o timeout padrão (~5 min) e PARAR no meio.
+let dispatcher = null;
+try {
+  const { Agent } = require('undici');
+  dispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 0, connect: { timeout: 30000 } });
+} catch {
+  /* undici indisponível: usa o fetch padrão */
+}
+
+const fetchOpts = (extra = {}) => ({
+  headers: { 'User-Agent': 'GGX-Bot' },
+  ...(dispatcher ? { dispatcher } : {}),
+  ...extra,
+});
+
 /**
  * Cliente da API externa de áudio do YouTube (ex.: zero-two-apis.store).
  * Baixa o áudio pelo servidor da API, contornando o bloqueio do YouTube
@@ -98,7 +114,7 @@ async function getAudioUrl(ytUrl) {
 async function getStream(ytUrl) {
   if (!isConfigured()) throw new Error('YTAUDIO_API_KEY não configurada.');
 
-  const res = await fetch(buildUrl(ytUrl), { headers: { 'User-Agent': 'GGX-Bot' } });
+  const res = await fetch(buildUrl(ytUrl), fetchOpts());
   if (!res.ok || !res.body) throw new Error(`API de áudio respondeu HTTP ${res.status}.`);
 
   const ct = (res.headers.get('content-type') || '').toLowerCase();
@@ -113,7 +129,7 @@ async function getStream(ytUrl) {
   const audioUrl = deepFindUrl(data);
   if (!audioUrl) throw new Error(`API não retornou link de áudio. Resposta: ${JSON.stringify(data).slice(0, 200)}`);
 
-  const audioRes = await fetch(audioUrl, { headers: { 'User-Agent': 'GGX-Bot' } });
+  const audioRes = await fetch(audioUrl, fetchOpts());
   if (!audioRes.ok || !audioRes.body) throw new Error(`Falha ao baixar o áudio (HTTP ${audioRes.status}).`);
   logger.info(`Áudio via API: ${ytUrl}`);
   return { stream: Readable.fromWeb(audioRes.body), type: StreamType.Arbitrary };
