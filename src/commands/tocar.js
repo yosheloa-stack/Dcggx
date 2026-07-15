@@ -12,10 +12,10 @@ const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('tocar')
-    .setDescription('Toca uma música no canal de voz.')
+    .setDescription('Toca uma música ou playlist no canal de voz.')
     .addStringOption((opt) =>
       opt.setName('musica')
-        .setDescription('Nome ou link do YouTube')
+        .setDescription('Nome, link do YouTube ou link de playlist')
         .setRequired(true)),
 
   async execute(interaction) {
@@ -64,10 +64,10 @@ module.exports = {
     // Confirmação privada; o painel rico com botões é postado pelo próprio player.
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const track = await music.resolveTrack(query, `${interaction.user}`);
-    if (!track) {
+    const { tracks, playlistTitle } = await music.resolve(query, `${interaction.user}`);
+    if (!tracks.length) {
       return interaction.editReply({
-        embeds: [embeds.danger('Nada encontrado', 'Não achei nenhuma música com esse nome/link.')],
+        embeds: [embeds.danger('Nada encontrado', 'Não achei nenhuma música/playlist com esse nome ou link.')],
       });
     }
 
@@ -80,16 +80,25 @@ module.exports = {
     }
 
     const willPlayNow = !player.current;
-    player.add(track);
-    const position = player.queue.length;
+    for (const t of tracks) player.add(t);
 
     await player.start();
 
+    // ----- Playlist: várias músicas de uma vez -----
+    if (playlistTitle) {
+      await interaction.editReply({ embeds: [embeds.success('Playlist adicionada', `**${tracks.length}** músicas na fila.`)] });
+      const embed = embeds.info('🎶 Playlist adicionada', `**${playlistTitle}**\n**${tracks.length}** músicas adicionadas à fila.`);
+      if (tracks[0]?.thumbnail) embed.setThumbnail(tracks[0].thumbnail);
+      interaction.channel.send({ embeds: [embed] }).catch(() => null);
+      return;
+    }
+
+    // ----- Música única -----
+    const track = tracks[0];
+    const position = player.queue.length;
     if (willPlayNow) {
-      // O painel já aparece no canal; confirmação discreta só para quem pediu.
       await interaction.editReply({ embeds: [embeds.success('Tocando', `▶️ **${track.title}**`)] });
     } else {
-      // Adicionada à fila: avisa no canal (todo mundo vê), estilo "Song Added to Queue".
       await interaction.editReply({ embeds: [embeds.success('Na fila', `Adicionada na posição #${position}.`)] });
       const embed = embeds.info('🎵 Adicionada à fila', `#${position} • **${track.title}**`)
         .addFields({ name: 'Duração', value: track.durationRaw || '—', inline: true });
