@@ -155,12 +155,14 @@ module.exports = {
           );
         }
         if (ch.likesOnly) {
-          // Ninguém digita/reage: só dá pra usar o comando /like
+          // Ninguém digita/reage e ninguém vê o histórico: cada um só vê a
+          // própria resposta do /like (igual a um canal exclusivo de bot).
           overwrites.push({
             id: everyone.id,
             deny: [
               PermissionFlagsBits.SendMessages,
               PermissionFlagsBits.AddReactions,
+              PermissionFlagsBits.ReadMessageHistory,
               PermissionFlagsBits.CreatePublicThreads,
               PermissionFlagsBits.CreatePrivateThreads,
             ],

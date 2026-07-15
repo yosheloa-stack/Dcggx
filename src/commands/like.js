@@ -46,7 +46,8 @@ module.exports = {
       });
     }
 
-    await interaction.deferReply();
+    // Resposta privada: só quem usou o comando vê o resultado ("só o bot e o user").
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     cooldown.set(uid, Date.now());
 
     const result = await frifas.sendLikes(uid);

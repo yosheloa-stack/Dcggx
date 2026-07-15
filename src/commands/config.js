@@ -4,6 +4,7 @@ const {
   SlashCommandBuilder,
   PermissionFlagsBits,
   MessageFlags,
+  ChannelType,
 } = require('discord.js');
 const store = require('../utils/store');
 const embeds = require('../utils/embeds');
@@ -32,6 +33,22 @@ module.exports = {
           ))
         .addBooleanOption((o) =>
           o.setName('ativo').setDescription('Ligado (true) ou desligado (false)').setRequired(true)))
+    .addSubcommand((s) =>
+      s.setName('canal-like')
+        .setDescription('Define um canal existente como o canal exclusivo do /like.')
+        .addChannelOption((o) =>
+          o.setName('canal')
+            .setDescription('Canal onde só o /like vai funcionar')
+            .addChannelTypes(ChannelType.GuildText)
+            .setRequired(true)))
+    .addSubcommand((s) =>
+      s.setName('canal-logs')
+        .setDescription('Define o canal onde o bot registra as ações de moderação.')
+        .addChannelOption((o) =>
+          o.setName('canal')
+            .setDescription('Canal de logs')
+            .addChannelTypes(ChannelType.GuildText)
+            .setRequired(true)))
     .addSubcommand((s) =>
       s.setName('acao')
         .setDescription('Define a punição de um sistema.')
@@ -74,6 +91,24 @@ module.exports = {
       store.updateSettings(guildId, { [nome]: { enabled: ativo } });
       return interaction.reply({
         embeds: [embeds.success('Atualizado', `Sistema **${nome}** agora está **${ativo ? 'ligado' : 'desligado'}**.`)],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    if (sub === 'canal-like') {
+      const canal = interaction.options.getChannel('canal');
+      store.updateSettings(guildId, { likesChannelId: canal.id });
+      return interaction.reply({
+        embeds: [embeds.success('Canal de like definido', `Agora só o comando \`/like\` funciona em ${canal}.\n\n💡 Dica: nas permissões desse canal, para @everyone, **negue** \`Enviar Mensagens\`, \`Adicionar Reações\` e \`Ver Histórico de Mensagens\`, e **permita** \`Usar Comandos de Aplicativo\`.`)],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    if (sub === 'canal-logs') {
+      const canal = interaction.options.getChannel('canal');
+      store.updateSettings(guildId, { logChannelId: canal.id });
+      return interaction.reply({
+        embeds: [embeds.success('Canal de logs definido', `As ações de moderação serão registradas em ${canal}.`)],
         flags: MessageFlags.Ephemeral,
       });
     }
