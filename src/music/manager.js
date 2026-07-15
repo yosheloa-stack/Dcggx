@@ -43,16 +43,20 @@ function toTrack(video, requestedBy) {
  * @returns {Promise<{ tracks: object[], playlistTitle: string|null }>}
  */
 async function resolve(query, requestedBy) {
-  // ----- "playlist <nome>": busca uma PLAYLIST pelo nome -----
-  const byName = query.match(/^play\s?list[:\s]+(.+)/i);
+  // ----- "playlist <nome>": busca uma PLAYLIST pelo nome (tolera erros de digitação) -----
+  const byName = query.match(/^(?:play\s?list|playslist|playslit|plyalist|lista|list)[\s:]+(.+)/i);
   if (byName) {
     const nome = byName[1].trim();
     try {
       const results = await play.search(nome, { limit: 1, source: { youtube: 'playlist' } });
       const found = results[0];
-      if (found?.url) return loadPlaylist(found.url, requestedBy, found.title || nome);
-    } catch { /* cai no fluxo normal abaixo */ }
-    return { tracks: [], playlistTitle: null };
+      if (found?.url) {
+        const pl = await loadPlaylist(found.url, requestedBy, found.title || nome);
+        if (pl.tracks.length) return pl;
+      }
+    } catch { /* segue para o fallback */ }
+    // Não achou playlist: busca como música normal para não deixar sem nada
+    return searchVideo(nome, requestedBy);
   }
 
   const type = await play.validate(query).catch(() => false);
@@ -70,7 +74,12 @@ async function resolve(query, requestedBy) {
   }
 
   // ----- Busca por texto -----
-  const results = await play.search(query, { limit: 1, source: { youtube: 'video' } }).catch(() => []);
+  return searchVideo(query, requestedBy);
+}
+
+/** Busca um único vídeo por texto. */
+async function searchVideo(texto, requestedBy) {
+  const results = await play.search(texto, { limit: 1, source: { youtube: 'video' } }).catch(() => []);
   const v = results[0];
   return { tracks: v?.url ? [toTrack(v, requestedBy)] : [], playlistTitle: null };
 }
