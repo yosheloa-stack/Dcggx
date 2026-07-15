@@ -15,6 +15,7 @@ const {
   ButtonStyle,
 } = require('discord.js');
 const play = require('play-dl');
+const ytApi = require('./ytApi');
 const embeds = require('../utils/embeds');
 const logger = require('../utils/logger');
 
@@ -119,7 +120,19 @@ class GuildPlayer {
     this.clearLeave();
 
     try {
-      const source = await play.stream(track.url);
+      // Usa a API externa (contorna o bloqueio do YouTube); cai no play-dl se falhar
+      let source;
+      if (ytApi.isConfigured()) {
+        try {
+          source = await ytApi.getStream(track.url);
+        } catch (apiErr) {
+          logger.warn(`API de áudio falhou (${apiErr.message}); tentando play-dl...`);
+          source = await play.stream(track.url);
+        }
+      } else {
+        source = await play.stream(track.url);
+      }
+
       const resource = createAudioResource(source.stream, {
         inputType: source.type,
         inlineVolume: true,
