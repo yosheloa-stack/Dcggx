@@ -1,7 +1,5 @@
 'use strict';
 
-const { Readable } = require('node:stream');
-const { StreamType } = require('@discordjs/voice');
 const logger = require('../utils/logger');
 
 /**
@@ -59,23 +57,26 @@ function deepFindUrl(obj) {
 }
 
 /**
- * Devolve um stream tocável { stream, type } para o @discordjs/voice.
+ * Devolve a URL direta do áudio (para o ffmpeg baixar com reconexão).
  * Aceita tanto a API que responde o áudio direto quanto a que responde
  * um JSON com o link do áudio.
+ * @returns {Promise<string>} URL de áudio tocável
  */
-async function getStream(ytUrl) {
+async function getAudioUrl(ytUrl) {
   if (!isConfigured()) throw new Error('YTAUDIO_API_KEY não configurada.');
 
-  const res = await fetch(buildUrl(ytUrl), { headers: { 'User-Agent': 'GGX-Bot' } });
-  if (!res.ok || !res.body) {
+  const apiUrl = buildUrl(ytUrl);
+  const res = await fetch(apiUrl, { headers: { 'User-Agent': 'GGX-Bot' } });
+  if (!res.ok) {
     throw new Error(`API de áudio respondeu HTTP ${res.status}.`);
   }
 
   const ct = (res.headers.get('content-type') || '').toLowerCase();
 
-  // Caso 1: a API já devolve o áudio direto
+  // Caso 1: a API entrega o áudio direto nessa URL -> o ffmpeg busca por ela
   if (ct.startsWith('audio') || ct.includes('octet-stream') || ct.includes('mpeg') || ct.includes('video')) {
-    return { stream: Readable.fromWeb(res.body), type: StreamType.Arbitrary };
+    res.body?.cancel?.().catch(() => {});
+    return apiUrl;
   }
 
   // Caso 2: a API devolve um JSON com o link do áudio
@@ -84,13 +85,8 @@ async function getStream(ytUrl) {
   if (!audioUrl) {
     throw new Error(`API não retornou link de áudio. Resposta: ${JSON.stringify(data).slice(0, 200)}`);
   }
-
-  const audioRes = await fetch(audioUrl, { headers: { 'User-Agent': 'GGX-Bot' } });
-  if (!audioRes.ok || !audioRes.body) {
-    throw new Error(`Falha ao baixar o áudio (HTTP ${audioRes.status}).`);
-  }
   logger.info(`Áudio via API: ${ytUrl}`);
-  return { stream: Readable.fromWeb(audioRes.body), type: StreamType.Arbitrary };
+  return audioUrl;
 }
 
-module.exports = { isConfigured, getStream, deepFindUrl };
+module.exports = { isConfigured, getAudioUrl, deepFindUrl };
