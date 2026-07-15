@@ -51,6 +51,7 @@ async function resolveTrack(query, requestedBy) {
     url: video.url,
     durationRaw: video.durationRaw || null,
     thumbnail: video.thumbnails?.[0]?.url || null,
+    author: video.channel?.name || video.channel?.title || '—',
     requestedBy,
   };
 }

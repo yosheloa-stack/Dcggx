@@ -4,10 +4,16 @@ const { Events, MessageFlags, PermissionFlagsBits } = require('discord.js');
 const embeds = require('../utils/embeds');
 const logger = require('../utils/logger');
 const store = require('../utils/store');
+const { handleButton } = require('../music/panelHandler');
 
 module.exports = {
   name: Events.InteractionCreate,
   async execute(interaction, client) {
+    // Botões do painel de música
+    if (interaction.isButton() && interaction.customId.startsWith('music:')) {
+      return handleButton(interaction);
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const command = client.commands.get(interaction.commandName);

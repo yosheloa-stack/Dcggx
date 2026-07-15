@@ -42,10 +42,9 @@ module.exports = {
           name: '🎵 Música',
           value: [
             '`/tocar` — toca uma música na call (nome ou link do YouTube)',
-            '`/pular` — pula a música atual',
-            '`/pausar` / `/retomar` — pausa e retoma',
-            '`/fila` — mostra a fila',
-            '`/parar` — para tudo e sai da call',
+            'Um **painel com botões** aparece: Pause, Skip, Back, Volume,',
+            'Loop, Shuffle, AutoPlay, Stop e Playlist — tudo no clique!',
+            '`/pular` `/pausar` `/retomar` `/fila` `/parar` também funcionam',
           ].join('\n'),
         },
         {

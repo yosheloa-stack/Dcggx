@@ -116,6 +116,11 @@ O GGX toca músicas do YouTube no canal de voz:
 /parar                         → para tudo e sai da call
 ```
 
+Ao tocar, aparece um **PAINEL DE MÚSICA** com botões clicáveis:
+🔉 Down · ⏮️ Back · ⏸️ Pause · ⏭️ Skip · 🔊 Up · 🔀 Shuffle · 🔁 Loop ·
+⏹️ Stop · 📻 AutoPlay · 🎵 Playlist. O volume usa `@discordjs/opus` (já
+instalado), sem precisar de ffmpeg.
+
 **Regras da música:**
 - Só toca se você estiver em uma **call de música** (canal de voz cujo nome
   contém `music`/`musica`, ex.: 🎵 Music 1). Ajustável em `config.js` → `music`.

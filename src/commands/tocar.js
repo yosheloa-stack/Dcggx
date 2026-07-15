@@ -61,7 +61,8 @@ module.exports = {
     }
 
     const query = interaction.options.getString('musica');
-    await interaction.deferReply();
+    // Confirmação privada; o painel rico com botões é postado pelo próprio player.
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const track = await music.resolveTrack(query, `${interaction.user}`);
     if (!track) {
@@ -78,18 +79,22 @@ module.exports = {
       return interaction.editReply({ embeds: [embeds.danger('Erro', err.message)] });
     }
 
+    const willPlayNow = !player.current;
     player.add(track);
     const position = player.queue.length;
-    const willPlayNow = !player.current;
 
     await player.start();
 
-    const embed = willPlayNow
-      ? embeds.success('Tocando', `▶️ **${track.title}**`)
-      : embeds.success('Adicionada à fila', `#${position} • **${track.title}**`);
-    if (track.thumbnail) embed.setThumbnail(track.thumbnail);
-    embed.addFields({ name: 'Duração', value: track.durationRaw || '—', inline: true });
-
-    await interaction.editReply({ embeds: [embed] });
+    if (willPlayNow) {
+      // O painel já aparece no canal; confirmação discreta só para quem pediu.
+      await interaction.editReply({ embeds: [embeds.success('Tocando', `▶️ **${track.title}**`)] });
+    } else {
+      // Adicionada à fila: avisa no canal (todo mundo vê), estilo "Song Added to Queue".
+      await interaction.editReply({ embeds: [embeds.success('Na fila', `Adicionada na posição #${position}.`)] });
+      const embed = embeds.info('🎵 Adicionada à fila', `#${position} • **${track.title}**`)
+        .addFields({ name: 'Duração', value: track.durationRaw || '—', inline: true });
+      if (track.thumbnail) embed.setThumbnail(track.thumbnail);
+      interaction.channel.send({ embeds: [embed] }).catch(() => null);
+    }
   },
 };
