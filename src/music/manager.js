@@ -2,6 +2,7 @@
 
 const play = require('play-dl');
 const YT = require('youtube-sr').default || require('youtube-sr');
+const ytData = require('./ytData');
 const GuildPlayer = require('./GuildPlayer');
 
 /**
@@ -64,6 +65,12 @@ async function resolve(query, requestedBy) {
   if (byName) {
     const nome = byName[1].trim();
 
+    // API oficial (mais confiável)
+    if (ytData.isConfigured()) {
+      const pl = await ytData.searchPlaylist(nome, requestedBy);
+      if (pl.tracks.length) return pl;
+    }
+
     // play-dl
     try {
       const r = await play.search(nome, { limit: 1, source: { youtube: 'playlist' } });
@@ -94,6 +101,10 @@ async function resolve(query, requestedBy) {
     const ehPlaylist = /\/playlist/i.test(query) || (listId && !videoId);
 
     if (ehPlaylist && listId) {
+      if (ytData.isConfigured()) {
+        const pl = await ytData.getPlaylist(listId, requestedBy);
+        if (pl.tracks.length) return pl;
+      }
       return loadPlaylist(`https://www.youtube.com/playlist?list=${listId}`, requestedBy);
     }
     if (videoId) {
@@ -107,8 +118,14 @@ async function resolve(query, requestedBy) {
   return searchVideo(query, requestedBy);
 }
 
-/** Busca um único vídeo por texto (play-dl e depois youtube-sr). */
+/** Busca um único vídeo por texto (API oficial, play-dl e depois youtube-sr). */
 async function searchVideo(texto, requestedBy) {
+  // API oficial (mais confiável e com preferência por música)
+  if (ytData.isConfigured()) {
+    const t = await ytData.search(texto, requestedBy);
+    if (t) return { tracks: [t], playlistTitle: null };
+  }
+
   try {
     const r = await play.search(texto, { limit: 1, source: { youtube: 'video' } });
     if (r[0]?.url) return { tracks: [toTrack(r[0], requestedBy)], playlistTitle: null };
