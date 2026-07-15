@@ -10,12 +10,11 @@ module.exports = {
     .setDescription('Mostra a latência do bot.'),
 
   async execute(interaction) {
-    const sent = await interaction.reply({
+    await interaction.reply({
       embeds: [embeds.info('🏓 Pong!', 'Calculando latência...')],
       flags: MessageFlags.Ephemeral,
-      fetchReply: true,
     });
-    const latency = sent.createdTimestamp - interaction.createdTimestamp;
+    const latency = Date.now() - interaction.createdTimestamp;
     const api = Math.round(interaction.client.ws.ping);
     await interaction.editReply({
       embeds: [embeds.info('🏓 Pong!', `Resposta: **${latency}ms**\nAPI: **${api}ms**`)],

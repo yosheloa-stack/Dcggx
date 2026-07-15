@@ -5,6 +5,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const { loadCommands } = require('./handlers/commandHandler');
 const { loadEvents } = require('./handlers/eventHandler');
+const { initMusic } = require('./music/init');
 const logger = require('./utils/logger');
 
 if (!process.env.DISCORD_TOKEN) {
@@ -25,6 +26,7 @@ const client = new Client({
 
 loadCommands(client);
 loadEvents(client);
+initMusic();
 
 // Rede de segurança contra erros não tratados
 process.on('unhandledRejection', (err) => logger.error('Rejeição não tratada:', err));

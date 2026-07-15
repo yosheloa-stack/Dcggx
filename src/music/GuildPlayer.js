@@ -131,9 +131,11 @@ class GuildPlayer {
       await this.showPanel();
     } catch (err) {
       logger.error('Falha ao tocar faixa:', err.message);
-      this.textChannel?.send({
-        embeds: [embeds.danger('Erro', `Não consegui tocar **${track.title}**. Pulando...`)],
-      }).catch(() => null);
+      const bloqueio = /confirm you.?re not a bot|sign in|429|consent/i.test(err.message || '');
+      const msg = bloqueio
+        ? `O YouTube bloqueou a busca (**${track.title}**). Configure o \`YOUTUBE_COOKIE\` no bot para resolver.`
+        : `Não consegui tocar **${track.title}**. Pulando...`;
+      this.textChannel?.send({ embeds: [embeds.danger('Erro na música', msg)] }).catch(() => null);
       this.playNext();
     }
   }
