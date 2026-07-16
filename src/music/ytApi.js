@@ -4,12 +4,14 @@ const { Readable } = require('node:stream');
 const { StreamType } = require('@discordjs/voice');
 const logger = require('../utils/logger');
 
-// Sem timeout de corpo/cabeçalho: o áudio vai baixando conforme toca, então
-// uma música longa poderia estourar o timeout padrão (~5 min) e PARAR no meio.
+// Sem timeout de corpo: o áudio vai baixando conforme toca, então uma música
+// longa estouraria o timeout padrão (~5 min) e PARARIA no meio ("terminated").
+// Usa setGlobalDispatcher (forma garantida) + passa por requisição também.
 let dispatcher = null;
 try {
-  const { Agent } = require('undici');
-  dispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 0, connect: { timeout: 30000 } });
+  const { Agent, setGlobalDispatcher } = require('undici');
+  dispatcher = new Agent({ headersTimeout: 30000, bodyTimeout: 0, connect: { timeout: 30000 } });
+  setGlobalDispatcher(dispatcher);
 } catch {
   /* undici indisponível: usa o fetch padrão */
 }

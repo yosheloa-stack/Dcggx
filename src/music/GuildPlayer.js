@@ -49,7 +49,13 @@ class GuildPlayer {
 
     this.player.on(AudioPlayerStatus.Idle, () => this.playNext());
     this.player.on('error', (err) => {
-      logger.error('Erro no player de música:', err.message);
+      // "terminated" = a conexão do áudio caiu no meio; é recuperável, então
+      // apenas registra como aviso e segue para a próxima faixa.
+      if (/terminated/i.test(err.message || '')) {
+        logger.warn('Stream de áudio caiu (recuperando):', err.message);
+      } else {
+        logger.error('Erro no player de música:', err.message);
+      }
       this.playNext();
     });
   }
