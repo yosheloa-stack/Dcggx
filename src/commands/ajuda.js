@@ -11,7 +11,7 @@ module.exports = {
 
   async execute(interaction) {
     const embed = embeds.info('🤖 Central de Ajuda — GGX')
-      .setDescription('Bot profissional de moderação e administração.')
+      .setDescription('Bot profissional de moderação e administração.\n\n💡 Prefere clicar em vez de digitar? Use `/painel` para abrir os comandos por **botão e formulário**.')
       .addFields(
         {
           name: '⚙️ Administração',

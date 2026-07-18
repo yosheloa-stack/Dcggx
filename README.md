@@ -10,6 +10,7 @@ pornográfico (NSFW).
 
 | Recurso | Descrição |
 |---|---|
+| **/painel** | Posta um painel de comandos por **botão e formulário (modal)** — clique em vez de digitar. |
 | **/setup** | Cria cargos, categorias e canais organizados automaticamente (somente dono). |
 | **Anti-Link** | Detecta e remove links não permitidos, com whitelist de domínios e cargos. |
 | **Anti-Spam** | Bloqueia flood (muitas mensagens) e mensagens repetidas. |
@@ -21,6 +22,22 @@ pornográfico (NSFW).
 | **Música** | Toca músicas do YouTube na call: `/tocar`, `/pular`, `/pausar`, `/retomar`, `/fila`, `/parar`. |
 | **/config** | Liga/desliga e ajusta cada sistema, direto pelo Discord. |
 | **Logs** | Toda punição é registrada em um canal de logs. |
+
+---
+
+## 🎛️ Painel de comandos (botão e modal)
+
+Rode **`/painel`** (staff, permissão *Gerenciar Servidor*) para postar um painel
+fixo no canal. A partir dele, qualquer membro usa o bot **clicando em botões**:
+
+- **Sem digitar nada:** Pular, Pausar, Retomar, Parar, Fila, Ping e Ajuda.
+- **Com formulário (modal):** Tocar (música), Like (UID), Marcar (mensagem) e
+  Avisos (adicionar / ver / limpar) — o Discord abre uma janelinha para preencher.
+- **Protegido:** os botões de moderação e administração checam a permissão de
+  quem clicou, igual aos slash commands.
+
+Os botões reaproveitam exatamente a mesma lógica dos comandos `/`, então tudo
+continua funcionando pelos dois caminhos.
 
 ---
 

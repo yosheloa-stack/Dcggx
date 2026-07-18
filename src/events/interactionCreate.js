@@ -5,6 +5,8 @@ const embeds = require('../utils/embeds');
 const logger = require('../utils/logger');
 const store = require('../utils/store');
 const { handleButton } = require('../music/panelHandler');
+const menu = require('../panel/menu');
+const likeCommand = require('../commands/like');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -12,6 +14,22 @@ module.exports = {
     // Botões do painel de música
     if (interaction.isButton() && interaction.customId.startsWith('music:')) {
       return handleButton(interaction);
+    }
+
+    // Painel de comandos (botões e modais)
+    if (interaction.isButton() && interaction.customId.startsWith(menu.PREFIX)) {
+      return menu.handleButton(interaction, client);
+    }
+    if (interaction.isModalSubmit() && interaction.customId.startsWith(menu.PREFIX)) {
+      return menu.handleModal(interaction, client);
+    }
+
+    // Botão/modal do /like (Enviar Likes → digita o UID)
+    if (interaction.isButton() && interaction.customId.startsWith(likeCommand.PREFIX)) {
+      return likeCommand.handleButton(interaction);
+    }
+    if (interaction.isModalSubmit() && interaction.customId.startsWith(likeCommand.PREFIX)) {
+      return likeCommand.handleModal(interaction);
     }
 
     if (!interaction.isChatInputCommand()) return;
