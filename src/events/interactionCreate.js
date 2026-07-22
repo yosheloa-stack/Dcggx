@@ -49,13 +49,21 @@ module.exports = {
     }
 
     // Comandos "ownerOnly" exigem ser dono do bot, dono do servidor ou admin.
+    // Se o comando marcar "allowAdmin: false", administradores (ex.: GGX Admin)
+    // NÃO entram — fica só para o dono do bot ou o dono do servidor.
     if (command.ownerOnly) {
       const isBotOwner = interaction.user.id === process.env.OWNER_ID;
       const isGuildOwner = interaction.guild && interaction.guild.ownerId === interaction.user.id;
       const isAdmin = interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
-      if (!isBotOwner && !isGuildOwner && !isAdmin) {
+      const adminAllowed = command.allowAdmin !== false;
+      if (!isBotOwner && !isGuildOwner && !(adminAllowed && isAdmin)) {
         return interaction.reply({
-          embeds: [embeds.danger('Sem permissão', 'Apenas o dono ou administradores podem usar este comando.')],
+          embeds: [embeds.danger(
+            'Sem permissão',
+            adminAllowed
+              ? 'Apenas o dono ou administradores podem usar este comando.'
+              : 'Apenas o dono do servidor pode usar este comando.',
+          )],
           flags: MessageFlags.Ephemeral,
         });
       }
