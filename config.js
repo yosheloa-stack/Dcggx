@@ -18,6 +18,14 @@ module.exports = {
     footer: 'GGX • Moderação Profissional',
   },
 
+  // Criador do bot (usado pelo comando /criador).
+  // Se OWNER_ID estiver no .env, o comando busca o perfil real no Discord;
+  // estes valores são o texto de reserva caso a busca falhe.
+  creator: {
+    name: 'YoshGGx',
+    username: 'yoshx7.',
+  },
+
   // Configuração padrão aplicada a cada servidor
   defaults: {
     // Canal onde o bot registra as ações de moderação (definido no /setup)

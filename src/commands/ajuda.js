@@ -36,6 +36,7 @@ module.exports = {
             '`/marcar` — marca todo mundo (@everyone)',
             '`/like` — envia likes para um jogador do Free Fire',
             '`/convite` — link para adicionar o GGX em outros servidores',
+            '`/criador` — mostra o criador do bot',
             '`/ping` — latência do bot',
           ].join('\n'),
         },
