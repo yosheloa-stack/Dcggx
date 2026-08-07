@@ -107,7 +107,10 @@ async function processLikes(interaction, uidRaw) {
     .addFields(
       { name: '👤 Conta', value: `${d.nome}`, inline: true },
       { name: '🆔 UID', value: `\`${d.id}\``, inline: true },
+      { name: '🌎 Região', value: `${d.region}`, inline: true },
+      { name: '👍 Antes', value: `${d.antes}`, inline: true },
       { name: '➕ Enviados', value: `${d.enviadas}`, inline: true },
+      { name: '❤️ Depois', value: `${d.depois}`, inline: true },
     );
 
   if (d.enviadas === 0) {
