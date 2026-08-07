@@ -37,6 +37,7 @@ module.exports = {
             '`/like` — envia likes para um jogador do Free Fire',
             '`/convite` — link para adicionar o GGX em outros servidores',
             '`/criador` — mostra o criador do bot',
+            '`/meuid` — mostra o seu ID do Discord',
             '`/ping` — latência do bot',
           ].join('\n'),
         },
