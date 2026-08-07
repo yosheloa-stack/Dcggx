@@ -14,8 +14,8 @@ const embeds = require('../utils/embeds');
 const frifas = require('../services/frifas');
 
 /**
- * /like — Envia likes diários para um jogador do Free Fire.
- * Usa a Frifas Likes API (https://github.com/HubsGGx/Daily-Likes-FreeFire).
+ * /like — Envia 220 likes para um jogador do Free Fire.
+ * Usa a API do Auto Like System (https://autolikesystem.com.br/docs).
  *
  * Dá para usar de dois jeitos:
  *   - /like id:123456789  → envia na hora;
@@ -107,10 +107,7 @@ async function processLikes(interaction, uidRaw) {
     .addFields(
       { name: '👤 Conta', value: `${d.nome}`, inline: true },
       { name: '🆔 UID', value: `\`${d.id}\``, inline: true },
-      { name: '🌎 Região', value: `${d.region}`, inline: true },
-      { name: '👍 Antes', value: `${d.antes}`, inline: true },
       { name: '➕ Enviados', value: `${d.enviadas}`, inline: true },
-      { name: '❤️ Depois', value: `${d.depois}`, inline: true },
     );
 
   if (d.enviadas === 0) {

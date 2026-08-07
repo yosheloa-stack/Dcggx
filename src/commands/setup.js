@@ -99,6 +99,8 @@ const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u
 
 module.exports = {
   ownerOnly: true,
+  // Só o dono do servidor (ou dono do bot). Administradores/moderadores NÃO.
+  allowAdmin: false,
   data: new SlashCommandBuilder()
     .setName('setup')
     .setDescription('Configura automaticamente cargos, canais e permissões do servidor (somente dono).')
