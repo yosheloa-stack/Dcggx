@@ -91,6 +91,14 @@ class GuildPlayer {
     });
   }
 
+  /** Um admin arrastou o bot para outra call: atualiza o alvo e segue tocando. */
+  onMovedTo(channelId) {
+    this.voiceChannelId = channelId;
+    // A conexão de voz (@discordjs/voice) acompanha a mudança sozinha; aqui só
+    // sincronizamos o ID que o painel usa para saber quem pode controlar.
+    this.clearLeave();
+  }
+
   // ------------------------------------------------------------------- fila
   add(track) {
     this.queue.push(track);
