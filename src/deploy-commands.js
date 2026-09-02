@@ -16,7 +16,11 @@ const path = require('path');
 const { REST, Routes } = require('discord.js');
 const logger = require('./utils/logger');
 
-const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID } = process.env;
+const CLIENT_ID = (process.env.CLIENT_ID || '').trim().replace(/^["']|["']$/g, '');
+const GUILD_ID = (process.env.GUILD_ID || '').trim().replace(/^["']|["']$/g, '');
+// Remove espaços, quebras de linha e aspas que costumam vir de copiar/colar
+// o token no painel de variáveis de ambiente (ex.: Square Cloud).
+const DISCORD_TOKEN = (process.env.DISCORD_TOKEN || '').trim().replace(/^["']|["']$/g, '');
 
 if (!DISCORD_TOKEN || !CLIENT_ID) {
   logger.error('DISCORD_TOKEN e CLIENT_ID são obrigatórios no .env.');
